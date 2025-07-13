@@ -1,9 +1,18 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Indovina il Numero nella Scatola Nera</title>
+
+    <!-- PWA e icone -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4dabf7">
+    <link rel="icon" href="icons/icon-192.png" type="image/png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Scatola Nera">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
     <style>
         * {
             box-sizing: border-box;
@@ -166,22 +175,19 @@
             <p>Riesci a indovinare qual è?</p>
         </div>
 
-        <div class="black-box" id="box"></div>
-
-        <div class="attempts" id="attempt-counter">Attempts: 0</div>
-
+        <div class="black-box" id="box">?</div>
+        <div class="attempts" id="attempt-counter">Tentativi: 0</div>
         <div class="feedback" id="feedback"></div>
 
         <div class="input-area">
-            <input type="number" id="guess-input" min="1" max="100" placeholder="Inserisci il tuo numero (1-100)">
+            <input type="number" id="guess-input" inputmode="numeric" min="1" max="100" placeholder="Inserisci il tuo numero (1-100)">
             <button id="submit-guess">Indovina</button>
         </div>
 
         <button class="restart-btn hidden" id="restart">Gioca Ancora</button>
     </div>
 
-    <script>// Game state
-        const game = {
+    <script>const game = {
             secretNumber: 0,
             attempts: 0,
             maxNumber: 100,
@@ -189,7 +195,6 @@
             gameOver: false
         };
 
-        // DOM elements
         const guessInput = document.getElementById('guess-input');
         const submitBtn = document.getElementById('submit-guess');
         const feedbackEl = document.getElementById('feedback');
@@ -197,13 +202,11 @@
         const restartBtn = document.getElementById('restart');
         const boxEl = document.getElementById('box');
 
-        // Initialize the game
         function initGame() {
             game.secretNumber = Math.floor(Math.random() * (game.maxNumber - game.minNumber + 1)) + game.minNumber;
             game.attempts = 0;
             game.gameOver = false;
 
-            // Reset UI
             guessInput.value = '';
             feedbackEl.textContent = '';
             feedbackEl.style.backgroundColor = 'transparent';
@@ -211,16 +214,13 @@
             submitBtn.disabled = false;
             guessInput.disabled = false;
             restartBtn.classList.add('hidden');
-
             boxEl.textContent = '?';
             boxEl.style.backgroundColor = '#000';
         }
 
-        // Process the player's guess
         function processGuess() {
             const guess = parseInt(guessInput.value);
 
-            // Validate input
             if (isNaN(guess) || guess < game.minNumber || guess > game.maxNumber) {
                 feedbackEl.textContent = `Per favore inserisci un numero tra ${game.minNumber} e ${game.maxNumber}.`;
                 feedbackEl.style.backgroundColor = '#495057';
@@ -228,11 +228,9 @@
             }
 
             game.attempts++;
-            attemptCounter.textContent = `Attempts: ${game.attempts}`;
+            attemptCounter.textContent = `Tentativi: ${game.attempts}`;
 
-            // Compare guess to secret number
             if (guess === game.secretNumber) {
-                // Correct guess
                 game.gameOver = true;
                 boxEl.textContent = game.secretNumber;
                 boxEl.style.backgroundColor = '#2b8a3e';
@@ -243,31 +241,35 @@
                 guessInput.disabled = true;
                 restartBtn.classList.remove('hidden');
             } else if (guess < game.secretNumber) {
-                // Too low
                 feedbackEl.textContent = 'Troppo basso! Prova un numero più alto.';
                 feedbackEl.style.backgroundColor = '#364fc7';
                 boxEl.textContent = '';
             } else {
-                // Too high
                 feedbackEl.textContent = 'Troppo alto! Prova un numero più basso.';
                 feedbackEl.style.backgroundColor = '#c92a2a';
                 boxEl.textContent = '';
             }
         }
 
-        // Event listeners
         submitBtn.addEventListener('click', processGuess);
-
         guessInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 processGuess();
             }
         });
-
         restartBtn.addEventListener('click', initGame);
 
-        // Start the game
-        initGame();</script>
+        initGame();
+
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker
+                    .register("service-worker.js")
+                    .then((reg) => console.log("Service Worker registrato:", reg.scope))
+                    .catch((err) => console.error("Errore Service Worker:", err));
+            });
+        }</script>
+
+    <noscript>Questo gioco richiede JavaScript per funzionare correttamente.</noscript>
 </body>
 </html>
-
