@@ -1,0 +1,21 @@
+﻿{
+    "name": "Indovina il Numero",
+    "short_name": "Scatola Nera",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#1a1a1a",
+    "theme_color": "#4dabf7",
+    "description": "Un semplice gioco per indovinare il numero nascosto nella scatola nera.",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
