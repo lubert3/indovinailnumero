@@ -1,0 +1,273 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indovina il Numero nella Scatola Nera</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .game-container {
+            background-color: #282828;
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4dabf7;
+        }
+
+        p {
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .intro {
+            margin-bottom: 30px;
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px;
+            border-radius: 6px;
+            border: 2px solid #444;
+            background-color: #333;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        button {
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background-color: #4dabf7;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            button:hover {
+                background-color: #339af0;
+                transform: translateY(-2px);
+            }
+
+            button:disabled {
+                background-color: #495057;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .attempts {
+            font-size: 14px;
+            color: #adb5bd;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .black-box {
+            width: 150px;
+            height: 150px;
+            background-color: #000;
+            margin: 20px auto;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .black-box::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+            }
+
+        .restart-btn {
+            margin-top: 20px;
+            background-color: #495057;
+        }
+
+            .restart-btn:hover {
+                background-color: #343a40;
+            }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 20px;
+            }
+
+            .black-box {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Indovina il Numero nella Scatola Nera</h1>
+
+        <div class="intro">
+            <p>Ho pensato a un numero tra 1 e 100.</p>
+            <p>Riesci a indovinare qual è?</p>
+        </div>
+
+        <div class="black-box" id="box"></div>
+
+        <div class="attempts" id="attempt-counter">Attempts: 0</div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="input-area">
+            <input type="number" id="guess-input" min="1" max="100" placeholder="Inserisci il tuo numero (1-100)">
+            <button id="submit-guess">Indovina</button>
+        </div>
+
+        <button class="restart-btn hidden" id="restart">Gioca Ancora</button>
+    </div>
+
+    <script>// Game state
+        const game = {
+            secretNumber: 0,
+            attempts: 0,
+            maxNumber: 100,
+            minNumber: 1,
+            gameOver: false
+        };
+
+        // DOM elements
+        const guessInput = document.getElementById('guess-input');
+        const submitBtn = document.getElementById('submit-guess');
+        const feedbackEl = document.getElementById('feedback');
+        const attemptCounter = document.getElementById('attempt-counter');
+        const restartBtn = document.getElementById('restart');
+        const boxEl = document.getElementById('box');
+
+        // Initialize the game
+        function initGame() {
+            game.secretNumber = Math.floor(Math.random() * (game.maxNumber - game.minNumber + 1)) + game.minNumber;
+            game.attempts = 0;
+            game.gameOver = false;
+
+            // Reset UI
+            guessInput.value = '';
+            feedbackEl.textContent = '';
+            feedbackEl.style.backgroundColor = 'transparent';
+            attemptCounter.textContent = 'Tentativi: 0';
+            submitBtn.disabled = false;
+            guessInput.disabled = false;
+            restartBtn.classList.add('hidden');
+
+            boxEl.textContent = '?';
+            boxEl.style.backgroundColor = '#000';
+        }
+
+        // Process the player's guess
+        function processGuess() {
+            const guess = parseInt(guessInput.value);
+
+            // Validate input
+            if (isNaN(guess) || guess < game.minNumber || guess > game.maxNumber) {
+                feedbackEl.textContent = `Per favore inserisci un numero tra ${game.minNumber} e ${game.maxNumber}.`;
+                feedbackEl.style.backgroundColor = '#495057';
+                return;
+            }
+
+            game.attempts++;
+            attemptCounter.textContent = `Attempts: ${game.attempts}`;
+
+            // Compare guess to secret number
+            if (guess === game.secretNumber) {
+                // Correct guess
+                game.gameOver = true;
+                boxEl.textContent = game.secretNumber;
+                boxEl.style.backgroundColor = '#2b8a3e';
+                feedbackEl.textContent = `Complimenti! Hai indovinato in ${game.attempts} tentativi!`;
+                feedbackEl.style.backgroundColor = '#2b8a3e';
+
+                submitBtn.disabled = true;
+                guessInput.disabled = true;
+                restartBtn.classList.remove('hidden');
+            } else if (guess < game.secretNumber) {
+                // Too low
+                feedbackEl.textContent = 'Troppo basso! Prova un numero più alto.';
+                feedbackEl.style.backgroundColor = '#364fc7';
+                boxEl.textContent = '';
+            } else {
+                // Too high
+                feedbackEl.textContent = 'Troppo alto! Prova un numero più basso.';
+                feedbackEl.style.backgroundColor = '#c92a2a';
+                boxEl.textContent = '';
+            }
+        }
+
+        // Event listeners
+        submitBtn.addEventListener('click', processGuess);
+
+        guessInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                processGuess();
+            }
+        });
+
+        restartBtn.addEventListener('click', initGame);
+
+        // Start the game
+        initGame();</script>
+</body>
+</html>
+
